@@ -1,0 +1,44 @@
+########################################################
+# Syntax Coloring Map for Sidereal Objects Library     #
+########################################################
+
+#######################################
+# Class
+#######################################
+
+SiderealObjects	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+decimalDegrees	KEYWORD2
+printDegMinSecs	KEYWORD2
+setRAdec	KEYWORD2
+getRAdec	KEYWORD2
+getDeclinationDec	KEYWORD2
+getStarMagnitude	KEYWORD2
+selectStarTable	KEYWORD2
+selectNGCTable	KEYWORD2
+selectICTable	KEYWORD2
+selectMessierTable	KEYWORD2
+selectCaldwellTable	KEYWORD2
+selectHershel400Table	KEYWORD2
+selectOtherObjectsTable	KEYWORD2
+identifyObject	KEYWORD2
+getIdentifiedObjectTable	KEYWORD2
+getIdentifiedObjectNumber	KEYWORD2
+printStarName	KEYWORD2
+getAltIdentifiedObjectTable	KEYWORD2
+getAltIdentifiedObjectNumber	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+
