@@ -2,7 +2,7 @@
 SiderealObjects.h
 Sidereal Objects Arduino Library Header File
 David Armstrong
-Version 1.0.0 - August 4, 2021
+Version 1.1.0 - September 3, 2021
 https://github.com/DavidArmstrong/SiderealObjects
 
 This file prototypes the SiderealObjects class, as implemented in SiderealObjects.cpp
@@ -75,19 +75,7 @@ class SiderealObjects {
   // library-accessible "private" interface
   private:
     const double F2PI = 2.0 * M_PI;
-    const double FPI  = M_PI;
-    const double FPIdiv2 = M_PI_2;
-    const double FminusPIdiv2 = -M_PI_2;
-    const double FPIdiv4 = M_PI_4;
-	// 2PI/24HR is really 2PI/seconds-in-a-24-hour-day
-    const double F2PIdiv24HR = 7.272205217E-5;
-    const double F24HRdiv2PI = 13750.9871;
-    // 2PI/360 is really 2PI/seconds-in-360-degrees
-    const double F2PIdiv360 = 4.8481368111E-6;
-    const double F360div2PI = 206264.8062471;
     const double F2to16 = 65536.0;
-    // #define F2to16minus1   65535.0
-    const double F2to15 = 32768.0;
     const double F2to15minus1 = 32767.0;
 	const int NSTARS = 609; // Number of stars in table
     const int NGCNUM = 7840; // Number of NGC objects
@@ -98,6 +86,8 @@ class SiderealObjects {
 	double sinRA, sinDec;
 	double cosRA, cosDec;
 	float magnitude;
+	uint16_t rawRA;
+	int16_t rawDec;
 
 	double inRange24(double d);
 	double inRange360(double d);

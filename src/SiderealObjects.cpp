@@ -2,7 +2,7 @@
 SiderealObjects.cpp
 Sidereal Objects Arduino Library C++ source
 David Armstrong
-Version 1.0.0 - August 4, 2021
+Version 1.1.0 - September 3, 2021
 https://github.com/DavidArmstrong/SiderealObjects
 
 Resources:
@@ -20,16 +20,16 @@ Distributed as-is; no warranty is given.
 #include "SiderealObjects.h"
 
 // Need the following define for SAMD processors
-#if defined (ARDUINO_ARCH_SAMD)
-#define Serial SerialUSB
+#if defined(ARDUINO_SAMD_ZERO) && defined(SERIAL_PORT_USBVIRTUAL)
+  #define Serial SERIAL_PORT_USBVIRTUAL
 #endif
 
 // Public Methods //////////////////////////////////////////////////////////
 // Start by doing any setup, and verifying that doubles are supported
 boolean SiderealObjects::begin(void) {
-  float  fpi = 3.14159265358979;
-  double dpi = 3.14159265358979;
-  if (dpi == (double)fpi ) return false; //double and float are the same here!
+  //float  fpi = 3.14159265358979;
+  //double dpi = 3.14159265358979;
+  //if (dpi == (double)fpi ) return false; //double and float are the same here!
 
   return true;
 }
@@ -95,11 +95,20 @@ boolean SiderealObjects::selectStarTable(int n) {
   tablenum = 1;
   objectnum = n;
   int index = (n - 1) * 5;
-  uint16_t rawRA = (SObjectsstars_bin[index] << 8) | SObjectsstars_bin[index + 1];
-  int16_t rawDec = (SObjectsstars_bin[index + 2] << 8) | SObjectsstars_bin[index + 3];
+  #if defined(__AVR_ATmega2560__)
+  rawRA = (pgm_read_byte_near(SObjectsstars_bin + index) << 8) | (pgm_read_byte_near(SObjectsstars_bin + index + 1));
+  rawDec = (pgm_read_byte_near(SObjectsstars_bin + index + 2) << 8) | (pgm_read_byte_near(SObjectsstars_bin + index + 3));
+  #else
+  rawRA = (SObjectsstars_bin[index] << 8) | SObjectsstars_bin[index + 1];
+  rawDec = (SObjectsstars_bin[index + 2] << 8) | SObjectsstars_bin[index + 3];
+  #endif
   RAdec = (double)rawRA * 24.0 / F2to16; //decimal hours
   DeclinationDec = (double)rawDec * 90. / F2to15minus1;
+  #if defined(__AVR_ATmega2560__)
+  magnitude = (float)(pgm_read_byte_near(SObjectsstars_bin + index + 4)) / 24. - 1.5;
+  #else
   magnitude = (float)SObjectsstars_bin[index + 4] / 24. - 1.5;
+  #endif
   return true;
 }
 
@@ -110,7 +119,8 @@ char* SiderealObjects::printStarName(int n) {
 	  return starName[index].name;
     }
   }
-  return "";
+  char* temp = "";
+  return temp;
 }
 
 boolean SiderealObjects::selectNGCTable(int n) {
@@ -118,8 +128,13 @@ boolean SiderealObjects::selectNGCTable(int n) {
   tablenum = 2;
   objectnum = n;
   int index = (n - 1) * 4;
-  uint16_t rawRA = (Cngc_bin[index] << 8) | Cngc_bin[index + 1];
-  int16_t rawDec = (Cngc_bin[index + 2] << 8) | Cngc_bin[index + 3];
+  #if defined(__AVR_ATmega2560__)
+  rawRA = (pgm_read_byte_near(Cngc_bin + index) << 8) | (pgm_read_byte_near(Cngc_bin + index + 1));
+  rawDec = (pgm_read_byte_near(Cngc_bin + index + 2) << 8) | (pgm_read_byte_near(Cngc_bin + index + 3));
+  #else
+  rawRA = (Cngc_bin[index] << 8) | Cngc_bin[index + 1];
+  rawDec = (Cngc_bin[index + 2] << 8) | Cngc_bin[index + 3];
+  #endif
   RAdec = (double)rawRA * 24.0 / F2to16; //decimal hours
   DeclinationDec = (double)rawDec * 90. / F2to15minus1;
   return true;
@@ -130,8 +145,13 @@ boolean SiderealObjects::selectICTable(int n) {
   tablenum = 3;
   objectnum = n;
   int index = (n - 1) * 4;
-  uint16_t rawRA = (Ic_bin[index] << 8) | Ic_bin[index + 1];
-  int16_t rawDec = (Ic_bin[index + 2] << 8) | Ic_bin[index + 3];
+  #if defined(__AVR_ATmega2560__)
+  rawRA = (pgm_read_byte_near(Ic_bin + index) << 8) | (pgm_read_byte_near(Ic_bin + index + 1));
+  rawDec = (pgm_read_byte_near(Ic_bin + index + 2) << 8) | (pgm_read_byte_near(Ic_bin + index + 3));
+  #else
+  rawRA = (Ic_bin[index] << 8) | Ic_bin[index + 1];
+  rawDec = (Ic_bin[index + 2] << 8) | Ic_bin[index + 3];
+  #endif
   RAdec = (double)rawRA * 24.0 / F2to16; //decimal hours
   DeclinationDec = (double)rawDec * 90. / F2to15minus1;
   return true;
@@ -142,7 +162,11 @@ boolean SiderealObjects::selectMessierTable(int n) {
   bool flag;
   //offset, since only 2 bytes are used per object
   int index = (n - 1) * 2;
+  #if defined(__AVR_ATmega2560__)
+  int ngcIcIndex = (pgm_read_byte_near(Msrch_bin + index) << 8) | (pgm_read_byte_near(Msrch_bin + index + 1));
+  #else
   int ngcIcIndex = (Msrch_bin[index] << 8) | Msrch_bin[index + 1];
+  #endif
   // object #s are NGC, IC, or Other objects only
   if (ngcIcIndex > NGCNUM) {
 	// Either IC or Other objects
@@ -167,7 +191,11 @@ boolean SiderealObjects::selectCaldwellTable(int n) {
   bool flag;
   //offset, since only 2 bytes are used per object
   int index = (n - 1) * 2 + 220;
+  #if defined(__AVR_ATmega2560__)
+  int ngcIcIndex = (pgm_read_byte_near(Msrch_bin + index) << 8) | (pgm_read_byte_near(Msrch_bin + index + 1));
+  #else
   int ngcIcIndex = (Msrch_bin[index] << 8) | Msrch_bin[index + 1];
+  #endif
   // object #s are NGC, IC, or Other objects only
   if (ngcIcIndex > NGCNUM) {
 	// Either IC or Other objects
@@ -194,7 +222,11 @@ boolean SiderealObjects::selectHershel400Table(int n) {
   //Table has 2 bytes for wierd Hershel number, and 2 bytes for NGC number
   //We only use a regular int number here, instead of the original wierd number
   int index = (n - 1) * 4 + 2;
+  #if defined(__AVR_ATmega2560__)
+  int ngcIcIndex = (pgm_read_byte_near(h400n_bin + index) << 8) | (pgm_read_byte_near(h400n_bin + index + 1));
+  #else
   int ngcIcIndex = (h400n_bin[index] << 8) | h400n_bin[index + 1];
+  #endif
   if (ngcIcIndex > NGCNUM) {
 	// Either IC or Other objects
 	return false; //bad input
@@ -208,20 +240,28 @@ boolean SiderealObjects::selectHershel400Table(int n) {
 }
 
 boolean SiderealObjects::selectOtherObjectsTable(int n) {
-  //if (n < 1 || n > 568) return false; //bad input
   tablenum = 7;
   objectnum = n;
   //search, since 6 bytes are used per object
   //int index = (n - 1) * 6;
   int index;
   uint16_t otherobjnum;
-  for (index = 0; index < 3414; index += 6) {
+  for (index = 0; index < 567 * 6; index += 6) {
+    #if defined(__AVR_ATmega2560__)
+	otherobjnum = (pgm_read_byte_near(Other_bin + index) << 8) | (pgm_read_byte_near(Other_bin + index + 1));
+	#else
     otherobjnum = (Other_bin[index] << 8) | Other_bin[index + 1];
+    #endif
 	if (otherobjnum == n) break;
   }
   if (otherobjnum != n) return false; // Didn't find it
-  uint16_t rawRA = (Other_bin[index + 2] << 8) | Other_bin[index + 3];
-  int16_t rawDec = (Other_bin[index + 4] << 8) | Other_bin[index + 5];
+  #if defined(__AVR_ATmega2560__)
+  rawRA = (pgm_read_byte_near(Other_bin + index + 2) << 8) | (pgm_read_byte_near(Other_bin + index + 3));
+  rawDec = (pgm_read_byte_near(Other_bin + index + 4) << 8) | (pgm_read_byte_near(Other_bin + index + 5));
+  #else
+  rawRA = (Other_bin[index + 2] << 8) | Other_bin[index + 3];
+  rawDec = (Other_bin[index + 4] << 8) | Other_bin[index + 5];
+  #endif
   RAdec = (double)rawRA * 24.0 / F2to16; //decimal hours
   DeclinationDec = (double)rawDec * 90. / F2to15minus1;
   return true;
@@ -235,14 +275,18 @@ boolean SiderealObjects::identifyObject(void) {
   uint16_t targetRA = RAdec * F2to16 / 24.; //convert to integers for faster compares
   int16_t targetDec = DeclinationDec * F2to15minus1 / 90.;
   int index;
-  uint16_t rawRA, tempobjnum;
-  int16_t rawDec;
+  uint16_t tempobjnum;
   alttablenum = 0;
   
   // Check star table first
   for (index = 0; index < NSTARS * 5; index += 5) {
+	#if defined(__AVR_ATmega2560__)
+    rawRA = (pgm_read_byte_near(SObjectsstars_bin + index) << 8) | (pgm_read_byte_near(SObjectsstars_bin + index + 1));
+    rawDec = (pgm_read_byte_near(SObjectsstars_bin + index + 2) << 8) | (pgm_read_byte_near(SObjectsstars_bin + index + 3));
+    #else
     rawRA = (SObjectsstars_bin[index] << 8) | SObjectsstars_bin[index + 1];
-	rawDec = (SObjectsstars_bin[index + 2] << 8) | SObjectsstars_bin[index + 3];
+    rawDec = (SObjectsstars_bin[index + 2] << 8) | SObjectsstars_bin[index + 3];
+    #endif
 	radiff = rawRA - targetRA;
 	decdiff = rawDec - targetDec;
 	comparediff = (radiff * radiff) + (decdiff * decdiff);
@@ -255,8 +299,13 @@ boolean SiderealObjects::identifyObject(void) {
   }
   // Check NGC table next
   for (index = 0; index < NGCNUM * 4; index += 4) {
+    #if defined(__AVR_ATmega2560__)
+    rawRA = (pgm_read_byte_near(Cngc_bin + index) << 8) | (pgm_read_byte_near(Cngc_bin + index + 1));
+    rawDec = (pgm_read_byte_near(Cngc_bin + index + 2) << 8) | (pgm_read_byte_near(Cngc_bin + index + 3));
+    #else
     rawRA = (Cngc_bin[index] << 8) | Cngc_bin[index + 1];
-	rawDec = (Cngc_bin[index + 2] << 8) | Cngc_bin[index + 3];
+    rawDec = (Cngc_bin[index + 2] << 8) | Cngc_bin[index + 3];
+    #endif
 	radiff = rawRA - targetRA;
 	decdiff = rawDec - targetDec;
 	comparediff = (radiff * radiff) + (decdiff * decdiff);
@@ -269,8 +318,13 @@ boolean SiderealObjects::identifyObject(void) {
   }
   // Check IC table next
   for (index = 0; index < ICNUM * 4; index += 4) {
+    #if defined(__AVR_ATmega2560__)
+    rawRA = (pgm_read_byte_near(Ic_bin + index) << 8) | (pgm_read_byte_near(Ic_bin + index + 1));
+    rawDec = (pgm_read_byte_near(Ic_bin + index + 2) << 8) | (pgm_read_byte_near(Ic_bin + index + 3));
+    #else
     rawRA = (Ic_bin[index] << 8) | Ic_bin[index + 1];
-	rawDec = (Ic_bin[index + 2] << 8) | Ic_bin[index + 3];
+    rawDec = (Ic_bin[index + 2] << 8) | Ic_bin[index + 3];
+    #endif
 	radiff = rawRA - targetRA;
 	decdiff = rawDec - targetDec;
 	comparediff = (radiff * radiff) + (decdiff * decdiff);
@@ -282,16 +336,25 @@ boolean SiderealObjects::identifyObject(void) {
     }
   }
   // Check Other table next
-  for (index = 0; index < 3414 * 6; index += 6) {
+  for (index = 0; index < 567 * 6; index += 6) {
+    #if defined(__AVR_ATmega2560__)
+    rawRA = (pgm_read_byte_near(Other_bin + index + 2) << 8) | (pgm_read_byte_near(Other_bin + index + 3));
+    rawDec = (pgm_read_byte_near(Other_bin + index + 4) << 8) | (pgm_read_byte_near(Other_bin + index + 5));
+    #else
     rawRA = (Other_bin[index + 2] << 8) | Other_bin[index + 3];
-	rawDec = (Other_bin[index + 4] << 8) | Other_bin[index + 5];
+    rawDec = (Other_bin[index + 4] << 8) | Other_bin[index + 5];
+    #endif
 	radiff = rawRA - targetRA;
 	decdiff = rawDec - targetDec;
 	comparediff = (radiff * radiff) + (decdiff * decdiff);
 	if (comparediff < totaldiff) {
       //better match
 	  tablenum = 7;
+	  #if defined(__AVR_ATmega2560__)
+	  objectnum = (pgm_read_byte_near(Other_bin + index) << 8) | (pgm_read_byte_near(Other_bin + index + 1));
+	  #else
       objectnum = (Other_bin[index] << 8) | Other_bin[index + 1];
+      #endif
 	  totaldiff = comparediff;
     }
   }
@@ -302,7 +365,11 @@ boolean SiderealObjects::identifyObject(void) {
     if (tablenum == 3) altobjnum += 10000; // IC number
     for (index = 0; index < (110 * 2); index +=2) {
       //Messier table check
-	  tempobjnum = (Msrch_bin[index] << 8) | Msrch_bin[index + 1];
+	  #if defined(__AVR_ATmega2560__)
+      tempobjnum = (pgm_read_byte_near(Msrch_bin + index) << 8) | (pgm_read_byte_near(Msrch_bin + index + 1));
+      #else
+      tempobjnum = (Msrch_bin[index] << 8) | Msrch_bin[index + 1];
+      #endif
 	  if (tempobjnum == altobjnum) {
         //Match Messier
 	    alttablenum = 4;
@@ -313,7 +380,11 @@ boolean SiderealObjects::identifyObject(void) {
     if (alttablenum != 4) {
 	  for (index = 220; index < (109 * 2 + 220); index +=2) {
         //Caldwell table check
-	    tempobjnum = (Msrch_bin[index] << 8) | Msrch_bin[index + 1];
+		#if defined(__AVR_ATmega2560__)
+        tempobjnum = (pgm_read_byte_near(Msrch_bin + index) << 8) | (pgm_read_byte_near(Msrch_bin + index + 1));
+        #else
+        tempobjnum = (Msrch_bin[index] << 8) | Msrch_bin[index + 1];
+        #endif
 	    if (tempobjnum == altobjnum) {
           //Match Caldwell
 	      alttablenum = 5;
@@ -323,9 +394,14 @@ boolean SiderealObjects::identifyObject(void) {
 	  // Skip if we found a Caldwell table match
       if ((tablenum == 2) && (alttablenum != 5)) {
 	    //Herchel table only applies to NGC objects
-	    for (index = 2; index < (2400); index +=4) {
+	    for (index = 2; index < (400 * 4); index +=4) {
           //Herschel table check
 	      tempobjnum = (h400n_bin[index] << 8) | h400n_bin[index + 1];
+		  #if defined(__AVR_ATmega2560__)
+          tempobjnum = (pgm_read_byte_near(h400n_bin + index) << 8) | (pgm_read_byte_near(h400n_bin + index + 1));
+          #else
+          tempobjnum = (h400n_bin[index] << 8) | h400n_bin[index + 1];
+          #endif
 	      if (tempobjnum == altobjnum) {
             //Match Herschel
 	        alttablenum = 6;
