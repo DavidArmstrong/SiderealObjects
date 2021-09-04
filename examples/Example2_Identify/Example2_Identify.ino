@@ -1,13 +1,13 @@
 /* Sidereal Objects Library - Identify function
- * Version 1.0.0 - August 4, 2021
- * Example3_Identify
+ * Version 1.1.0 - September 3, 2021
+ * Example2_Identify
 */
 
 #include <SiderealObjects.h>
 
 // Need the following define for SAMD processors
-#if defined (ARDUINO_ARCH_SAMD)
-#define Serial SerialUSB
+#if defined(ARDUINO_SAMD_ZERO) && defined(SERIAL_PORT_USBVIRTUAL)
+  #define Serial SERIAL_PORT_USBVIRTUAL
 #endif
 
 SiderealObjects myAstro;
@@ -16,11 +16,8 @@ void setup() {
   Serial.begin(9600);
   delay(2000); //SAMD boards may need a long time to init SerialUSB
   Serial.println("Sidereal Planets Coordinate Conversion Functions");
-  if (myAstro.begin() == false) {
-	Serial.println("Target board does not handle Real Double numbers! Stopping...");
-	while(1); //Freeze
-  }
-  Serial.println("\nIdentify object closest to a given set of coordinates.\n");
+  myAstro.begin();
+  Serial.println("Identify object closest to a given set of coordinates.\n");
   Serial.println("Star Sirius:");
   Serial.println("We can use the decimalDegrees() function to make this easier.");
   Serial.println("162  9 Alpha CMa Sirius   RA=6h 45m 8.9s    Dec=-16d 42m 58s    Mag=-1.46");
