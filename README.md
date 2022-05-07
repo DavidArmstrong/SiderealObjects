@@ -3,7 +3,7 @@
 
 Sidereal Objects - A strangely named Arduino Library for providing low precision Epoch 2000.0 Astronomical object coordinates.
 
-  Version 1.1.0 - September 3, 2021
+  Version 1.1.1 - May 7, 2022
 
   By David Armstrong
   https://github.com/DavidArmstrong/SiderealObjects

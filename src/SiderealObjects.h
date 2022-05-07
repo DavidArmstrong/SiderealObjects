@@ -28,6 +28,7 @@ Distributed as-is; no warranty is given.
 
 #include <stdint.h>
 //#include <math.h>
+#include <string.h>
 #include "SiderealObjectsTables.h"
 
 #if defined(ARDUINO) && ARDUINO >= 100
@@ -50,6 +51,9 @@ struct SiderealObjectsData {
 class SiderealObjects {
   // user-accessible "public" interface
   public:
+    const int NSTARS = 609; // Number of stars in table
+    const int NGCNUM = 7840; // Number of NGC objects
+    const int ICNUM = 5386; // Number of IC objects
     SiderealObjectsData spData;
     boolean begin(void);
 	double decimalDegrees(int degrees, int minutes, float seconds);
@@ -77,9 +81,6 @@ class SiderealObjects {
     const double F2PI = 2.0 * M_PI;
     const double F2to16 = 65536.0;
     const double F2to15minus1 = 32767.0;
-	const int NSTARS = 609; // Number of stars in table
-    const int NGCNUM = 7840; // Number of NGC objects
-    const int ICNUM = 5386; // Number of IC objects
 
 	double RAdec, DeclinationDec;
 	double RArad, DeclinationRad;
@@ -102,5 +103,7 @@ class SiderealObjects {
       unsigned int bit16[2];
       unsigned char bit8[4];
     };
+	
+	char* tempStarName;
 };
 #endif

@@ -40,5 +40,7 @@ getAltIdentifiedObjectNumber	KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
-
+NSTARS	LITERAL1
+NGCNUM	LITERAL1
+ICNUM	LITERAL1
 

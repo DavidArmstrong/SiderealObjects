@@ -119,8 +119,8 @@ char* SiderealObjects::printStarName(int n) {
 	  return starName[index].name;
     }
   }
-  char* temp = "";
-  return temp;
+  strcpy(tempStarName, "");
+  return tempStarName;
 }
 
 boolean SiderealObjects::selectNGCTable(int n) {
