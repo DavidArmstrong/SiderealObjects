@@ -46,7 +46,7 @@ double getRAdec()<br>
 double getDeclinationDec()<br>
   Returns a double number of the selected object Declination in degrees.
 
-float getStarMagnitude()>br>
+float getStarMagnitude()<br>
   Returns magnitude for selected star.
 
 boolean selectStarTable(int n)<br>
